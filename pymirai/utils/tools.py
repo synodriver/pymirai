@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+"""
+操作字节流的
+"""
+import struct
+
+
+def int2bytes(num: int, outlen: int) -> bytes:
+    return num.to_bytes(length=outlen, byteorder='big')
+
+
+def hex2bytes(hexstr: str) -> bytes:
+    str_bytes = hexstr.strip()
+    pkt = bytes.fromhex(str_bytes)
+    return pkt
+
+
+def bytes2hex(bin_: bytes) -> str:
+    return ''.join(['%02X ' % b for b in bin_])
+
+
+def _bytes2hex(bin_: bytes) -> str:
+    return bin_.hex().upper()
+
+
+def str2bytes(text: str):
+    return text.encode('utf-8')
+
+
+def str2hex(text: str):
+    strBytes = text.encode('utf-8')
+    return bytes2hex(strBytes)
+
+
+def hex2str(hexstr: str):
+    strBytes = hexstr.split()
+    pkt = bytearray(int(x, 16) for x in strBytes)
+    return pkt.decode('utf-8')
