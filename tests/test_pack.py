@@ -17,7 +17,7 @@ class TestPack(TestCase):
     def test_decode(self):
         with open("data.txt") as f:
             a = f.read().strip()
-        data = Tea.decrypt((hex2bytes(a)), hex2bytes("00 00 00 00 00 00 00 00"))
+        data = Tea.decrypt((hex2bytes(a)), bytes(16))
         pass
 
 

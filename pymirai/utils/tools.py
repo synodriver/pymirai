@@ -10,7 +10,7 @@ def int2bytes(num: int, outlen: int) -> bytes:
 
 
 def hex2bytes(hexstr: str) -> bytes:
-    str_bytes = hexstr.strip()
+    str_bytes = hexstr.strip().replace("\n", "")
     pkt = bytes.fromhex(str_bytes)
     return pkt
 
