@@ -53,7 +53,7 @@ class Pack(object):
         :return:
         """
         _qq = map(int, str(qq))
-        pkt: bytes = b"".join(bytes[48 | i] for i in _qq)
+        pkt: bytes = b"".join(bytes([48 | i]) for i in _qq)
         self.buffer += pkt
 
     def set_login_token(self, byte) -> None:
