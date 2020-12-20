@@ -1,4 +1,5 @@
 from pymirai.utils.pack import Pack
+from pymirai.utils.unpack import Unpack
 from pymirai.utils.tlv import Tlv
 from pymirai.utils.tea import Tea
 from pymirai.utils.tools import *
@@ -170,3 +171,13 @@ class AndroidQQ(object):
 
         pkt = pack.get_all()
         return pkt
+
+    def Unpack_Login(self,pkt:bytes):
+        position = pkt.find(str2bytes(self.qq))
+        pkt = pkt[position+len(self.qq):]
+        pkt = Tea.decrypt(pkt,bytes(16))
+        up = Unpack(pkt)
+        headlen = up.getInt()
+        headdata = up.getBin(headlen - 4)
+        maindata = up.getAll()
+        

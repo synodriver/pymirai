@@ -12,8 +12,8 @@ s.connect(("113.96.12.224",8080))
 s.send(Loginqq.Pack_Login())
 buf = s.recv(2048)
 s.close()
-print(bytes2hex(buf))
-
+#print(bytes2hex(buf))
+Loginqq.Unpack_Login(buf)
 
 # qq='2193096276'
 # pack = Pack()

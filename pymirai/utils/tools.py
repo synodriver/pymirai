@@ -8,6 +8,8 @@ import random
 def int2bytes(num: int, outlen: int) -> bytes:
     return num.to_bytes(length=outlen, byteorder='big')
 
+def bytes2int(bin_) -> int:
+    return int.from_bytes(bin_,byteorder='big')
 
 def hex2bytes(hexstr: str) -> bytes:
     str_bytes = hexstr.strip().replace("\n", "")
