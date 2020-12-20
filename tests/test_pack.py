@@ -22,6 +22,8 @@ class TestPack(TestCase):
         with open("data.txt") as f:
             a = f.read().strip()
         data = Tea.decrypt((hex2bytes(a)), bytes(16))
+        with open("login", "wb") as f2:
+            f2.write(data)
         pass
 
 

@@ -71,10 +71,3 @@ class VersionInfo(BaseModel):
     sub_sigmap: int
     main_sigmap: int
 
-
-def main():
-    pass
-
-
-if __name__ == "__main__":
-    main()

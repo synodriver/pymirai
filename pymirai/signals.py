@@ -24,13 +24,23 @@ class SignalManager:
 
     def disconnect(self, receiver: Callable, signal, **kwargs) -> None:
         """
-
+        断开一个接收器的对于给定信号的连接
         :param receiver:
         :param signal:
         :param kwargs:
         :return:
         """
         return dispatcher.disconnect(receiver, signal, self.sender, **kwargs)
+
+    def disconnect_all(self, signal, **kwargs) -> None:
+        """
+        将所有接收器断开给定信号的连接
+        :param signal:
+        :param kwargs:
+        :return:
+        """
+        for receiver in dispatcher.liveReceivers(dispatcher.getAllReceivers(self.send, signal)):
+            dispatcher.disconnect(receiver, signal, self.sender, **kwargs)
 
     def send(self, signal, *args, **kwargs) -> List[Tuple]:
         """
