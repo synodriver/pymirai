@@ -3,11 +3,13 @@
 操作字节流的
 """
 import struct
-
+import random
 
 def int2bytes(num: int, outlen: int) -> bytes:
     return num.to_bytes(length=outlen, byteorder='big')
 
+def bytes2int(bin_) -> int:
+    return int.from_bytes(bin_,byteorder='big')
 
 def hex2bytes(hexstr: str) -> bytes:
     str_bytes = hexstr.strip().replace("\n", "")
@@ -36,3 +38,8 @@ def hex2str(hexstr: str):
     strBytes = hexstr.split()
     pkt = bytearray(int(x, 16) for x in strBytes)
     return pkt.decode('utf-8')
+
+def getRandomBin(num):
+    intlist = [random.randint(0,255) for i in range(num)]
+    pkt = bytearray(intlist)
+    return pkt

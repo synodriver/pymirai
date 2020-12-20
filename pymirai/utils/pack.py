@@ -56,8 +56,10 @@ class Pack(object):
         pkt: bytes = b"".join(bytes([48 | i]) for i in _qq)
         self.buffer += pkt
 
-    def set_login_token(self, byte) -> None:
-        pass
+    def set_long_token(self, bin_) -> None:
+        self.write_int(len(bin_))
+        self.write_bytes(bin_)
 
-    def set_token(self, byte) -> None:
-        pass
+    def set_token(self, bin_) -> None:
+        self.write_short(len(bin_))
+        self.write_bytes(bin_)
