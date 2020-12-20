@@ -1,18 +1,15 @@
-from socket import socket,AF_INET,SOCK_STREAM
-from pymirai.utils.tools import *
-from pymirai.utils.pack import Pack
-from pymirai.utils.tea import Tea
-import time
-from AndroidQQ import AndroidQQ
-#print(bytes2hex(int2bytes(2193096276,4)))
-Loginqq = AndroidQQ('2193096276','dwg20010417',0)
-#print(bytes2hex(Loginqq.Pack_Login()))
-s=socket(AF_INET,SOCK_STREAM)
-s.connect(("113.96.12.224",8080))
+from socket import socket, AF_INET, SOCK_STREAM
+from pymirai.protocol.AndroidQQ import AndroidQQ
+
+# print(bytes2hex(int2bytes(2193096276,4)))
+Loginqq = AndroidQQ('2193096276', 'dwg20010417', 0)
+# print(bytes2hex(Loginqq.Pack_Login()))
+s = socket(AF_INET, SOCK_STREAM)
+s.connect(("113.96.12.224", 8080))
 s.send(Loginqq.Pack_Login())
 buf = s.recv(2048)
 s.close()
-#print(bytes2hex(buf))
+# print(bytes2hex(buf))
 Loginqq.Unpack_Login(buf)
 
 # qq='2193096276'

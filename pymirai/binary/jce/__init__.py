@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-QQclient及其相关的事件
+jce协议模块  很有可能要去吵昵昵的
 """
-from .client import QQClient
+
 
 def main():
     pass

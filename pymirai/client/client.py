@@ -2,7 +2,7 @@
 """
 from https://github.com/Mrs4s/MiraiGo/blob/94779a6b765bf1acd23bd99fa1cbf1b2ff6fa75a/client/client.go
 """
-from typing import List
+from typing import List, Dict
 import ipaddress
 
 from pydantic import BaseModel
@@ -58,6 +58,25 @@ class QQClient(BaseModel):
     pwd_flag: bool
     last_message_seq: int
 
+    # msg_svc_cache:还是要好好抄啊
+
 
 class LoginSigInfo(BaseModel):
-    pass
+    login_bitmap: int  # uint64
+    tgt: bytes
+    tgt_key: bytes
+
+    srm_token: bytes  # study room manager | 0x16a
+    t133: bytes
+    user_stkey: bytes
+    user_stwebsig: bytes
+    skey: bytes
+    skey_expire_time: int  # int64
+    d2: bytes
+    d2Key: bytes
+    wt_session_ticket_key: bytes
+    device_token: bytes
+
+    ps_keymap: Dict[str, bytes]
+    pt4_token_map: Dict[str, bytes]
+
