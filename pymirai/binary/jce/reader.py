@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-import struct
-from typing import Tuple
+"""
+https://tarscloud.github.io/TarsDocs/base/tars-protocol.html
+"""
+from typing import Tuple, Union, Callable, Any
 
 from .head import HeadData
 from .buffer import ByteBuffer
+
+DEFAULT_ENCODING = "utf-8"
 
 
 class JceReader:
@@ -11,8 +15,11 @@ class JceReader:
     读取jce字节流
     """
 
-    def __init__(self, data: bytes):
-        self.buffer = ByteBuffer(data)
+    def __init__(self, data: Union[bytes, bytearray, ByteBuffer]):
+        if isinstance(data, (bytes, bytearray)):
+            self.buffer = ByteBuffer(data)
+        elif isinstance(data, ByteBuffer):
+            self.buffer = data
 
     def read_head(self) -> Tuple[HeadData, int]:
         """
@@ -45,7 +52,7 @@ class JceReader:
         """
         self.buffer.read_bytes(size)
 
-    def skip_field(self, type_: int):
+    def _skip_field(self, type_: int):
         """
         跳过一个字段 仅仅是跳过内容 这个头部还得你自己跳的
         see https://blog.csdn.net/jiange_zh/article/details/86562232
@@ -66,24 +73,268 @@ class JceReader:
         elif type_ == 7:
             len_ = self.buffer.read_int4()
             self.skip(len_)
-        elif type_ == 8:
-            pass
-            # todo 一定要完成这个
+        elif type_ == 8:  # map
+            size: int = self.read_int32(0)
+            for i in range(2 * size):
+                self.skip_next_field()
+        elif type_ == 9:  # list
+            size: int = self.read_int32(0)
+            for i in range(size):
+                self.skip_next_field()
+        elif type_ == 10:
+            self.skip_to_struct_end()
+        elif type_ == 13:
+            self.read_head()
+            size: int = self.read_int32(0)
+            self.skip(size)
+
+    def skip_next_field(self):
+        head, _ = self.read_head()
+        self._skip_field(head.type)
+
+    def skip_field(self, count: int):
+        for i in range(count):
+            self.skip_next_field()
+
+    def read_bytes(self, size: int) -> bytes:
+        b = self.buffer.read_bytes(size)
+        return b
+
+    def _read_byte(self) -> bytes:
+        """
+        一个字节
+        :return:
+        """
+        return self.read_bytes(1)
+
+    def read_uint16(self) -> int:
+        return self.buffer.read_int2()
+
+    def _read_int32(self) -> int:
+        return self.buffer.read_int4()
+
+    def _read_int64(self) -> int:
+        return self.buffer.read_int8()
+
+    def _read_float32(self) -> float:
+        return self.buffer.read_float()
+
+    def _read_float64(self) -> float:
+        return self.buffer.read_double()
 
     def skip_to_tag(self, tag: int) -> bool:
+        """
+        跳转到tag
+        :param tag:
+        :return:
+        """
         while True:
             head, len_ = self.peak_head()
             if tag <= head.tag or head.type == 11:
                 return tag == head.tag
             self.skip(len_)
-            self.skip_field(head.type)
+            self._skip_field(head.type)
+
+    def skip_to_struct_end(self):
+        while True:
+            head, _ = self.read_head()
+            self._skip_field(head.type)
+            if head.type == 11:
+                return
+
+    def read_byte(self, tag: int) -> bytes:
+        if not self.skip_to_tag(tag):
+            return bytes([0])
+        head, _ = self.read_head()
+        if (type_ := head.type) == 12:
+            return bytes([0])
+        elif type_ == 0:
+            return self._read_byte()
+        else:
+            return bytes([0])
 
         pass
 
+    def read_bool(self, tag: int) -> bool:
+        return self.read_bytes(tag) != 0
 
-def main():
-    pass
+    def read_int16(self, tag: int) -> int:
+        if not self.skip_to_tag(tag):
+            return 0
+        head, _ = self.read_head()
+        if (type_ := head.type) == 12:
+            return 0
+        elif type_ == 0:
+            return self._read_byte()[0]
+        elif type_ == 1:
+            return self.read_uint16()
+        else:
+            return 0
 
+    def read_int32(self, tag: int) -> int:
+        if not self.skip_to_tag(tag):
+            return 0
+        head, _ = self.read_head()
+        if (type_ := head.type) == 12:
+            return 0
+        elif type_ == 0:
+            return self._read_byte()[0]
+        elif type_ == 1:
+            return self.read_uint16()
+        elif type_ == 2:
+            return self._read_int32()
+        else:
+            return 0
 
-if __name__ == "__main__":
-    main()
+    def read_int64(self, tag: int) -> int:
+        if not self.skip_to_tag(tag):
+            return 0
+        head, _ = self.read_head()
+        if (type_ := head.type) == 12:
+            return 0
+        elif type_ == 0:
+            return self._read_byte()[0]
+        elif type_ == 1:
+            return self.read_uint16()
+        elif type_ == 2:
+            return self._read_int32()
+        elif type_ == 3:
+            return self._read_int64()
+        else:
+            return 0
+
+    def read_float32(self, tag: int) -> float:
+        if not self.skip_to_tag(tag):
+            return 0.0
+        head, _ = self.read_head()
+        if (type_ := head.type) == 12:
+            return 0.0
+        elif type_ == 4:
+            return self._read_float32()
+        else:
+            return 0.0
+
+    def read_float64(self, tag: int):
+        if not self.skip_to_tag(tag):
+            return 0.0
+        head, _ = self.read_head()
+        if (type_ := head.type) == 12:
+            return 0.0
+        elif type_ == 4:
+            return self._read_float32()
+        elif type_ == 5:
+            return self._read_float64()
+        else:
+            return 0.0
+        pass
+
+    def read_string(self, tag: int):
+        if not self.skip_to_tag(tag):
+            return ""
+        head, _ = self.read_head()
+        if (type_ := head.type) == 6:
+            return self.read_bytes(self._read_byte()[0]).decode(DEFAULT_ENCODING)
+        elif type_ == 7:
+            return self.read_bytes(self._read_int32()).decode(DEFAULT_ENCODING)
+        else:
+            return ""
+
+    # ReadAny Read any type via tag, unsupported JceStruct
+    def read_any(self, tag: int) -> Any:
+        if not self.skip_to_tag(tag):
+            return
+        head, _ = self.read_head()
+        if (type_ := head.type) == 0:
+            return self._read_byte()[0]
+        elif type_ == 1:
+            return self.read_uint16()
+        elif type_ == 2:
+            return self._read_int32()
+        elif type_ == 3:
+            return self._read_int64()
+        elif type_ == 4:
+            return self._read_float32()
+        elif type_ == 5:
+            return self._read_float64()
+        elif type_ == 6:
+            return self.read_bytes(self._read_byte()[0]).decode(DEFAULT_ENCODING)
+        elif type_ == 7:
+            return self.read_bytes(self._read_int32()).decode(DEFAULT_ENCODING)
+        elif type_ == 8:  # map csdn的文档大有问题
+            size: int = self.read_int32(0)  # 跳到字典
+            m = {}
+            for i in range(size):
+                m[self.read_any(0)] = self.read_any(1)
+            return m
+        elif type_ == 9:  # list
+            sl = []
+            size = self.read_int32(0)
+            for i in range(size):
+                sl.append(self.read_any(0))
+            return sl
+        elif type_ == 10:  # obj
+            head, _ = self.peak_head()
+            return self.read_any(head.tag)
+
+        elif type_ == 11:
+            return None
+
+        elif type_ == 12:
+            return 0
+        elif type_ == 13:  # simple list   head len data
+            self.read_head()
+            return self.read_bytes(self.read_int32(0))
+        else:
+            return
+
+    def read_map_f(self, tag: int, func: Callable[[Any, Any], Any]) -> None:
+        if not self.skip_to_tag(tag):
+            return
+        self.read_head()  # 去头就可以吃了
+        size = self.read_int32(0)
+        for i in range(size):
+            k = self.read_any(0)
+            v = self.read_any(1)
+            if k is not None:
+                func(k, v)
+
+    def read_list(self, tag: int):
+        if not self.skip_to_tag(tag):
+            return
+        head, _ = self.read_head()
+        if head.type == 9:
+            sl = []
+            size = self.read_int32(0)
+            for i in range(size):
+                sl.append(self.read_any(0))
+            return sl
+        elif head.type == 13:  # simple list   head len data
+            self.read_head()
+            return self.read_bytes(self.read_int32(0))
+
+    def read_object(self, tag: int):
+        """
+        读取自定义结构
+        :param tag:
+        :return:
+        """
+        if not self.skip_to_tag(tag):
+            return
+        ls = []
+        head, _ = self.read_head()  # 去头就可以吃了
+        if head.type != 10:
+            return ls
+        head, _ = self.read_head()
+        tag = head.tag
+        while True:
+            data = self.read_any(tag)
+            if data:
+                ls.append(data)
+            tag += 1
+
+    def read_available(self) -> bytes:
+        """
+        读取全部缓冲区剩下的
+        :return:
+        """
+        self.read_bytes(len(self.buffer) - self.buffer.position)

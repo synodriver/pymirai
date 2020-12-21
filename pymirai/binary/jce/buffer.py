@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import struct
-from typing import Optional
+from typing import Optional, Union
 
 
 class ByteBuffer:
@@ -11,7 +11,7 @@ class ByteBuffer:
     # _bytes = None
     # _position = 0
 
-    def __init__(self, bs: Optional[bytes] = None):
+    def __init__(self, bs: Optional[Union[bytes, bytearray]] = None):
         if bs is None:
             self._bytes = b""
         elif isinstance(bs, bytes):
@@ -21,6 +21,9 @@ class ByteBuffer:
         else:
             raise TypeError("'buffer' argument must be bytes or bytesarray")
         self._position = 0
+
+    def __len__(self):
+        return len(self._bytes)
 
     @property
     def bytes(self) -> bytes:
