@@ -2,7 +2,7 @@
 import abc
 from typing import Dict, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from pymirai.binary.jce import JceReader
 
@@ -14,16 +14,16 @@ class IJceStruct(metaclass=abc.ABCMeta):
 
 
 class RequestPacket(BaseModel):  # todo 加入jceid标注
-    iversion: int  # int16   `jceId:"1"`
-    cpacket_type: bytes  # byte              `jceId:"2"`
-    imessage_type: int  # int32             `jceId:"3"`
-    irequest_id: int  # int32             `jceId:"4"`
-    sservant_name: str  # string            `jceId:"5"`
-    sfunc_name: str  # string            `jceId:"6"`
-    sbuffer: bytes  # []byte            `jceId:"7"`
-    itimeout: int  # int32             `jceId:"8"`
-    context: Dict[str, str]  # map[string]string `jceId:"9"`
-    status: Dict[str, str]  # map[string]string `jceId:"10"`
+    iversion: int = Field(jce_id=1)  # int16   `jceId:"1"`
+    cpacket_type: bytes = Field(jce_id=2)  # byte              `jceId:"2"`
+    imessage_type: int = Field(jce_id=3)  # int32             `jceId:"3"`
+    irequest_id: int = Field(jce_id=4)  # int32             `jceId:"4"`
+    sservant_name: str = Field(jce_id=5)  # string            `jceId:"5"`
+    sfunc_name: str = Field(jce_id=6)  # string            `jceId:"6"`
+    sbuffer: bytes = Field(jce_id=7)  # []byte            `jceId:"7"`
+    itimeout: int = Field(jce_id=8)  # int32             `jceId:"8"`
+    context: Dict[str, str] = Field(jce_id=9)  # map[string]string `jceId:"9"`
+    status: Dict[str, str] = Field(jce_id=10)  # map[string]string `jceId:"10"`
 
 
 class RequestDataVersion3(BaseModel):
@@ -309,5 +309,112 @@ class TroopNumber(BaseModel):
     guild_sub_type: int  # int64  `jceId:"32"`
     cmd_uin_ringtone_id: int  # int64  `jceId:"33"`
     cmd_uin_flag_ex2: int  # int64  `jceId:"34"`
-    pass
-# todo 明天继续
+
+
+class TroopMemberListRequest(BaseModel, IJceStruct):
+    uin: int  # int64 `jceId:"0"`
+    group_code: int  # int64 `jceId:"1"`
+    next_uin: int  # int64 `jceId:"2"`
+    group_uin: int  # int64 `jceId:"3"`
+    version: int  # int64 `jceId:"4"`
+    req_type: int  # int64 `jceId:"5"`
+    get_list_appoint_time: int  # int64 `jceId:"6"`
+    rich_card_name_ver: bytes  # byte  `jceId:"7"`
+
+    def read_from(self, reader: JceReader):
+        pass
+
+
+class TroopMemberInfo(BaseModel):
+    member_uin: int  # int64  `jceId:"0"`
+    face_id: int  # int16  `jceId:"1"`
+    age: bytes  # byte   `jceId:"2"`
+    gender: bytes  # byte   `jceId:"3"`
+    nick: str  # string `jceId:"4"`
+    status: bytes  # byte   `jceId:"5"`
+    show_name: str  # string `jceId:"6"`
+    name: str  # string `jceId:"8"`
+    memo: str  # string `jceId:"12"`
+    auto_remark: str  # string `jceId:"13"`
+    member_level: int  # int64  `jceId:"14"`
+    join_time: int  # int64  `jceId:"15"`
+    last_speak_time: int  # int64  `jceId:"16"`
+    credit_level: int  # int64  `jceId:"17"`
+    flag: int  # int64  `jceId:"18"`
+    flag_ext: int  # int64  `jceId:"19"`
+    point: int  # int64  `jceId:"20"`
+    concerned: bytes  # byte   `jceId:"21"`
+    shielded: bytes  # byte   `jceId:"22"`
+    special_title: str  # string `jceId:"23"`
+    special_titleexpire_time: int  # int64  `jceId:"24"`
+    job: str  # string `jceId:"25"`
+    apollo_flag: bytes  # byte   `jceId:"26"`
+    apollo_timestamp: int  # int64  `jceId:"27"`
+    global_group_level: int  # int64  `jceId:"28"`
+    title_id: int  # int64  `jceId:"29"`
+    shutup_timestamp: int  # int64  `jceId:"30"`
+    global_group_point: int  # int64  `jceId:"31"`
+    rich_card_name_ver: bytes  # byte   `jceId:"33"`
+    vip_type: int  # int64  `jceId:"34"`
+    vip_level: int  # int64  `jceId:"35"`
+    big_club_level: int  # int64  `jceId:"36"`
+    big_club_flag: int  # int64  `jceId:"37"`
+    nameplate: int  # int64  `jceId:"38"`
+    group_honor: bytes  # []byte `jceId:"39"`
+
+
+class ModifyGroupCardRequest(BaseModel, IJceStruct):
+    zero: int  # int64        `jceId:"0"`
+    group_code: int  # int64        `jceId:"1"`
+    new_seq: int  # int64        `jceId:"2"`
+    uin_info: List[IJceStruct]  # []IJceStruct `jceId:"3"`
+
+    def read_from(self, reader: JceReader):
+        pass
+
+
+class UinInfo(BaseModel, IJceStruct):
+    uin: int  # int64  `jceId:"0"`
+    flag: int  # int64  `jceId:"1"`
+    name: str  # string `jceId:"2"`
+    gender: bytes  # byte   `jceId:"3"`
+    phone: str  # string `jceId:"4"`
+    email: str  # string `jceId:"5"`
+    remark: str  # string `jceId:"6"`
+
+    def read_from(self, reader: JceReader):
+        pass
+
+
+class SummaryCardReq(BaseModel, IJceStruct):
+    uin: int  # int64 `jceId:"0"`
+    come_from: int  # int32 `jceId:"1"`
+    qzone_feed_timestamp: int  # int64 `jceId:"2"`
+    is_friend: bytes  # byte  `jceId:"3"`
+    group_code: int  # int64 `jceId:"4"`
+    group_uin: int  # int64 `jceId:"5"`
+    seed: bytes  # []byte`jceId:"6"`
+    search_name: str  # string`jceId:"7"`
+    get_control: int  # int64   `jceId:"8"`
+    add_friend_source: int  # int32   `jceId:"9"`
+    secure_sig: bytes  # []byte  `jceId:"10"`
+    tiny_id: int  # int64   `jceId:"15"`
+    like_source: int  # int64   `jceId:"16"`
+    req_medal_wall_info: bytes  # byte    `jceId:"18"`
+    req_0x5eb_field_id: List[int]  # []int64 `jceId:"19"`
+    req_nearby_god_info: bytes  # byte    `jceId:"20"`
+    req_extend_card: bytes  # byte    `jceId:"22"`
+
+    def read_from(self, reader: JceReader):
+        pass
+
+
+class SummaryCardReqSearch(BaseModel, IJceStruct):
+    keyword: str  # string   `jceId:"0"`
+    country_code: str  # string   `jceId:"1"`
+    version: int  # int32    `jceId:"2"`
+    req_services: List[bytes]  # [][]byte `jceId:"3"` // busi
+
+    def read_from(self, reader: JceReader):
+        pass
+# todo 明天继续  先完成writer

@@ -20,6 +20,8 @@ class JceReader:
             self.buffer = ByteBuffer(data)
         elif isinstance(data, ByteBuffer):
             self.buffer = data
+        else:
+            raise TypeError(f"can't init JceReader with data type {data.__class__.__name__}")
 
     def read_head(self) -> Tuple[HeadData, int]:
         """
@@ -264,7 +266,9 @@ class JceReader:
             size: int = self.read_int32(0)  # 跳到字典
             m = {}
             for i in range(size):
-                m[self.read_any(0)] = self.read_any(1)
+                k = self.read_any(0)  # 不这么写会出问题
+                v = self.read_any(1)
+                m[k] = v
             return m
         elif type_ == 9:  # list
             sl = []
@@ -273,8 +277,13 @@ class JceReader:
                 sl.append(self.read_any(0))
             return sl
         elif type_ == 10:  # obj
-            head, _ = self.peak_head()
-            return self.read_any(head.tag)
+            sl = []
+            while True:
+                head, _ = self.peak_head()
+                if head.type == 11:
+                    break
+                sl.append(self.read_any(head.tag))
+            return sl
 
         elif type_ == 11:
             return None

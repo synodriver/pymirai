@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import struct
+from copy import deepcopy
 from typing import Optional, Union
 
 
@@ -13,11 +14,11 @@ class ByteBuffer:
 
     def __init__(self, bs: Optional[Union[bytes, bytearray]] = None):
         if bs is None:
-            self._bytes = b""
-        elif isinstance(bs, bytes):
-            self._bytes = bs
+            self._bytes = bytearray()
         elif isinstance(bs, bytearray):
-            self._bytes = bytes(bs)
+            self._bytes = bs
+        elif isinstance(bs, bytes):
+            self._bytes = bytearray(bs)
         else:
             raise TypeError("'buffer' argument must be bytes or bytesarray")
         self._position = 0
@@ -26,7 +27,7 @@ class ByteBuffer:
         return len(self._bytes)
 
     @property
-    def bytes(self) -> bytes:
+    def bytes(self) -> bytearray:
         """
         返回自己的全部数据
         :return:
@@ -124,13 +125,13 @@ class ByteBuffer:
         b = self.read_bytes(8)
         return struct.unpack('>d', b)[0]
 
-    def write_bytes(self, data: bytes) -> None:
+    def write_bytes(self, data: Union["bytes", bytearray]) -> None:
         """
         写入一个字节流
         :param data:
         :return:
         """
-        self._bytes += data
+        self._bytes.extend(data)
         self._position += len(data)
 
     def write_hex(self, hexstr: str) -> None:
@@ -163,9 +164,7 @@ class ByteBuffer:
         返回自己的一份深拷贝
         :return:
         """
-        bb = ByteBuffer(self._bytes)
-        bb.position = self.position
-        return bb
+        return deepcopy(self)
 
     def seek(self, position: int) -> None:
         """
