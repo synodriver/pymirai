@@ -2,6 +2,7 @@
 import unittest
 
 from pymirai.binary.jce import JceReader
+from pymirai.binary.jce.struct import RequestPacket
 
 
 class TestJce(unittest.TestCase):
@@ -15,7 +16,13 @@ class TestJce(unittest.TestCase):
             head, _ = reader.peak_head()
             print(reader.read_any(head.tag))
         # self.assertEqual(reader.buffer.position,100)
-        pass
+
+    def test_jce_writer_schema(self):
+        data = RequestPacket(iversion=1, cpacket_type=b"12", imessage_type=3, irequest_id=4, sservant_name="5",
+                             sfunc_name="6", sbuffer=b"7",itimeout=8,context={"1":"2"},status={"msg":"ok"})
+        for field_name, val in data.schema()["properties"].items():
+            jce_id: int = val["jce_id"]
+            print(getattr(data, field_name), jce_id)
 
 
 def main():

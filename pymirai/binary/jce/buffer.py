@@ -69,7 +69,7 @@ class ByteBuffer:
         self._position += 1
         return b
 
-    def read_bytes(self, size: int) -> bytes:
+    def read_bytes(self, size: int) -> bytearray:
         """
         读取接下来的size个字节 指针向后面移动size
         :param size:
@@ -139,15 +139,15 @@ class ByteBuffer:
         pkt = bytes.fromhex(str_bytes)
         self.write_bytes(pkt)
 
-    def write_int2(self, num):
+    def write_int2(self, num) -> None:
         pkt = struct.pack(">h", num)
         self.write_bytes(pkt)
 
-    def write_int4(self, num):
+    def write_int4(self, num) -> None:
         pkt = struct.pack(">i", num)
         self.write_bytes(pkt)
 
-    def write_int8(self, num):
+    def write_int8(self, num) -> None:
         pkt = struct.pack(">q", num)
         self.write_bytes(pkt)
 
@@ -155,11 +155,11 @@ class ByteBuffer:
         pkt = struct.pack(">f", num)
         self.write_bytes(pkt)
 
-    def write_double(self, num):
+    def write_double(self, num) -> None:
         pkt = struct.pack(">d", num)
         self.write_bytes(pkt)
 
-    def copy(self):
+    def copy(self) -> "ByteBuffer":
         """
         返回自己的一份深拷贝
         :return:

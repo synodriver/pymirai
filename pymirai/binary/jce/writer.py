@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import Union, List, Optional, Any, MutableMapping
 
+from pydantic import BaseModel
+
 from .buffer import ByteBuffer
 from .struct import IJceStruct
 
@@ -146,7 +148,7 @@ class JceWriter:
             return
         self.write_int32(len(data), 0)
         for i in data:
-            self.write_jce_struct(i, 0)  # todo 没完成
+            self.write_jce_struct(i, 0)
 
     def write_map(self, m: dict, tag: int):
         if not m:
@@ -159,7 +161,7 @@ class JceWriter:
         self.write_int32(len(m), 0)
         for k, v in m.items():
             self.write_object(k, 0)
-            self.write_object(v, 1)  # todo 没完成
+            self.write_object(v, 1)
 
     def write_object(self, data: Any, tag: int):
         if isinstance(data, MutableMapping):
@@ -179,13 +181,23 @@ class JceWriter:
             self.write_float64(data, tag)
         elif isinstance(data, str):
             self.write_string(data, tag)
-        elif isinstance(data, IJceStruct):
+        elif isinstance(data, IJceStruct):  # todo 还有个basemodel
             self.write_jce_struct(data, tag)
 
-    def write_jce_struct_raw(self, data: IJceStruct):
+    def write_jce_struct_raw(self, data: Union[IJceStruct, BaseModel]):
         """
         todo 用pydantic给前面的都写加上jceid元数据 不然没法玩
         :param data:
         :return:
         """
-        pass
+        for field_name, val in data.schema()["properties"].items():
+            jce_id: int = val["jce_id"]
+            self.write_object(getattr(data, field_name), jce_id)
+
+    def write_jce_struct(self, data: IJceStruct, tag: int):
+        self.write_head(10, tag)
+        self.write_jce_struct_raw(data)
+        self.write_head(11, 0)
+
+    def bytes(self) -> bytearray:
+        return self.buffer.bytes

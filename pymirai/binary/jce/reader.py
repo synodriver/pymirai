@@ -98,7 +98,7 @@ class JceReader:
         for i in range(count):
             self.skip_next_field()
 
-    def read_bytes(self, size: int) -> bytes:
+    def read_bytes(self, size: int) -> bytearray:
         b = self.buffer.read_bytes(size)
         return b
 
@@ -280,7 +280,7 @@ class JceReader:
             sl = []
             while True:
                 head, _ = self.peak_head()
-                if head.type == 11:
+                if head.type == 11 and head.tag == 0:
                     break
                 sl.append(self.read_any(head.tag))
             return sl
