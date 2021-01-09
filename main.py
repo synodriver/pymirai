@@ -5,7 +5,7 @@ from pymirai.utils.tea import Tea
 import time
 from AndroidQQ import AndroidQQ
 #print(bytes2hex(int2bytes(2193096276,4)))
-Loginqq = AndroidQQ('2193096276','dwg20010417',0)
+Loginqq = AndroidQQ('你的名字','你的密码',0)
 #print(bytes2hex(Loginqq.Pack_Login()))
 s=socket(AF_INET,SOCK_STREAM)
 s.connect(("113.96.12.224",8080))
