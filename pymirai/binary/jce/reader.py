@@ -102,7 +102,7 @@ class JceReader:
         b = self.buffer.read_bytes(size)
         return b
 
-    def _read_byte(self) -> bytes:
+    def _read_byte(self) -> bytearray:
         """
         一个字节
         :return:
@@ -144,7 +144,7 @@ class JceReader:
             if head.type == 11:
                 return
 
-    def read_byte(self, tag: int) -> bytes:
+    def read_byte(self, tag: int) -> Union[bytes, bytearray]:
         if not self.skip_to_tag(tag):
             return bytes([0])
         head, _ = self.read_head()
@@ -281,6 +281,7 @@ class JceReader:
             while True:
                 head, _ = self.peak_head()
                 if head.type == 11 and head.tag == 0:
+                    self.read_head()
                     break
                 sl.append(self.read_any(head.tag))
             return sl
@@ -307,7 +308,7 @@ class JceReader:
             if k is not None:
                 func(k, v)
 
-    def read_list(self, tag: int):
+    def read_list(self, t: type, tag: int):
         if not self.skip_to_tag(tag):
             return
         head, _ = self.read_head()

@@ -3,8 +3,8 @@ from typing import Union, List, Optional, Any, MutableMapping
 
 from pydantic import BaseModel
 
-from .buffer import ByteBuffer
-from .struct import IJceStruct
+from pymirai.binary.jce.buffer import ByteBuffer
+from pymirai.binary.jce.struct import IJceStruct
 
 DEFAULT_ENCODING = "utf-8"
 
