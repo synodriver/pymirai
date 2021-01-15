@@ -2,6 +2,7 @@
 """
 from https://github.com/Mrs4s/MiraiGo/blob/94779a6b765bf1acd23bd99fa1cbf1b2ff6fa75a/client/client.go
 """
+import random
 from typing import List, Dict
 import ipaddress
 
@@ -79,4 +80,5 @@ class LoginSigInfo(BaseModel):
 
     ps_keymap: Dict[str, bytes]
     pt4_token_map: Dict[str, bytes]
+
 

@@ -3,9 +3,7 @@ from typing import Dict, List, Union
 
 from pydantic import BaseModel, Field
 
-from .jce.reader import JceReader
-from .jce.writer import JceWriter
-from .jce.struct import IJceStruct
+from pyjce import JceReader, JceWriter, IJceStruct
 
 
 class RequestPacket(IJceStruct):  # todo 加入jceid标注
@@ -222,6 +220,7 @@ class SvcReqGetDevLoginInfo(BaseModel):
     require_max: int = Field(None, jce_id=5)  # int64  `jceId:"5"`
     get_dev_list_type: int = Field(None,
                                    jce_id=6)  # int64  1: getLoginDevList 2: getRecentLoginDevList 4:
+
     # getAuthLoginDevList
 
     def to_bytes(self):
@@ -428,7 +427,7 @@ class TroopListRequest(IJceStruct):
     def read_from(self, reader: JceReader):
         pass
 
-    def to_bytes(self):
+    def to_bytes(self) -> bytes:
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
@@ -519,6 +518,11 @@ class TroopMemberListRequest(IJceStruct):
     def read_from(self, reader: JceReader):
         pass
 
+    def to_bytes(self) -> bytes:
+        writer = JceWriter()
+        writer.write_jce_struct_raw(self)
+        return writer.bytes()
+
 
 class TroopMemberInfo(BaseModel):
     member_uin: int = Field(None, jce_id=0)  # int64  `jceId:"0"`
@@ -557,6 +561,43 @@ class TroopMemberInfo(BaseModel):
     nameplate: int = Field(None, jce_id=38)  # int64  `jceId:"38"`
     group_honor: Union[bytes, bytearray] = Field(None, jce_id=39)  # []byte `jceId:"39"`
 
+    def read_from(self, reader: JceReader):
+        self.member_uin = reader.read_int64(0)
+        self.face_id = reader.read_int16(1)
+        self.age = reader.read_byte(2)
+        self.gender = reader.read_byte(3)
+        self.nick = reader.read_string(4)
+        self.status = reader.read_byte(5)
+        self.show_name = reader.read_string(6)
+        self.name = reader.read_string(8)
+        self.memo = reader.read_string(12)
+        self.auto_remark = reader.read_string(13)
+        self.member_level = reader.read_int64(14)
+        self.join_time = reader.read_int64(15)
+        self.last_speak_time = reader.read_int64(16)
+        self.credit_level = reader.read_int64(17)
+        self.flag = reader.read_int64(18)
+        self.flag_ext = reader.read_int64(19)
+        self.point = reader.read_int64(20)
+        self.concerned = reader.read_byte(21)
+        self.shielded = reader.read_byte(22)
+        self.special_title = reader.read_string(23)
+        self.special_titleexpire_time = reader.read_int64(24)
+        self.job = reader.read_string(25)
+        self.apollo_flag = reader.read_byte(26)
+        self.apollo_timestamp = reader.read_int64(27)
+        self.global_group_level = reader.read_int64(28)
+        self.title_id = reader.read_int64(29)
+        self.shutup_timestamp = reader.read_int64(30)
+        self.global_group_point = reader.read_int64(31)
+        self.rich_card_name_ver = reader.read_byte(33)
+        self.vip_type = reader.read_int64(34)
+        self.vip_level = reader.read_int64(35)
+        self.big_club_level = reader.read_int64(36)
+        self.big_club_flag = reader.read_int64(37)
+        self.nameplate = reader.read_int64(38)
+        self.group_honor = reader.read_any(39)
+
 
 class ModifyGroupCardRequest(IJceStruct):
     zero: int = Field(None, jce_id=0)  # int64        `jceId:"0"`
@@ -566,6 +607,11 @@ class ModifyGroupCardRequest(IJceStruct):
 
     def read_from(self, reader: JceReader):
         pass
+
+    def to_bytes(self) -> bytes:
+        writer = JceWriter()
+        writer.write_jce_struct_raw(self)
+        return writer.bytes()
 
 
 class UinInfo(IJceStruct):
