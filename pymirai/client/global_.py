@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 from /client/global.go
+里面放全局变量 一个实例只能存在一份
 """
 import random
 import hashlib
@@ -57,8 +58,8 @@ class DeviceInfo(BaseModel):
     imei: bytes = Field(b"468356291846738")
     android_id: bytes = Field(b"PYMIRAI.123456.001")
     apn: bytes = Field(b"wifi")
-    guid: bytes
-    tgtgt_key: bytes
+    guid: bytes = Field(None)
+    tgtgt_key: bytes = Field(None)
     protocol: int = Field(2)
     version: "Version" = Version(incremental=b"5891938",
                                  release=b"10",
