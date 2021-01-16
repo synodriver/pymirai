@@ -2,7 +2,6 @@
 from typing import Dict, List, Union
 
 from pydantic import BaseModel, Field
-
 from pyjce import JceReader, JceWriter, IJceStruct
 
 
@@ -69,6 +68,92 @@ class SsoServerInfo(IJceStruct):
         self.server = reader.read_string(1)
         self.port = reader.read_int32(2)
         self.location = reader.read_string(8)
+
+
+class BigDataIPInfo(IJceStruct):
+    type_: int  # int64  `jceId:"0"`
+    server: str  # string `jceId:"1"`
+    port: int  # int64  `jceId:"2"`
+
+    def read_from(self, reader: JceReader):
+        self.type_ = reader.read_int64(0)
+        self.server = reader.read_string(1)
+        self.port = reader.read_int64(2)
+
+    def to_bytes(self) -> Union[bytes, bytearray]:
+        pass
+
+
+class BigDataIPList(IJceStruct):
+    service_type: int  # int64           `jceId:"0"`
+    ip_list: List[BigDataIPInfo]  # []BigDataIPInfo `jceId:"1"`
+    fragment_size: int  # int64           `jceId:"3"`
+
+    def read_from(self, reader: JceReader):
+        self.service_type = reader.read_int64(0)
+        self.ip_list = reader.read_list(BigDataIPInfo, 1)
+        self.fragment_size = reader.read_int64(2)
+
+    def to_bytes(self) -> Union[bytes, bytearray]:
+        pass
+
+
+class BigDataChannel(IJceStruct):
+    ip_lists: List[BigDataIPList]  # []BigDataIPList `jceId:"0"`
+    sig_session: bytes  # []byte          `jceId:"1"`
+    key_session: bytes  # []byte          `jceId:"2"`
+    sig_uin: int  # int64           `jceId:"3"`
+    connect_flag: int  # int32           `jceId:"4"`
+    pb_buf: bytes  # []byte          `jceId:"5"`
+
+    def read_from(self, reader: JceReader):
+        self.ip_lists = reader.read_list(BigDataIPList, 0)
+        self.sig_session = reader.read_any(1)
+        self.key_session = reader.read_any(2)
+        self.sig_uin = reader.read_int64(3)
+        self.connect_flag = reader.read_int32(4)
+        self.pb_buf = reader.read_any(5)
+
+    def to_bytes(self) -> Union[bytes, bytearray]:
+        pass
+
+
+class FileStorageServerInfo(IJceStruct):
+    server: str = Field(None, jce_id=1)  # `jceid:"1"`
+    port: int = Field(None, jce_id=2)  # jceId:"2"`
+
+    def read_from(self, reader: JceReader):
+        self.server = reader.read_string(1)
+        self.port = reader.read_int32(2)
+
+    def to_bytes(self) -> Union[bytes, bytearray]:
+        pass
+
+
+class FileStoragePushFSSvcList(IJceStruct):
+    upload_list: List[FileStorageServerInfo] = Field(None, jce_id=0)  # []FileStorageServerInfo `jceId:"0"`
+    pic_download_list: List[FileStorageServerInfo] = Field(None, jce_id=1)  # []FileStorageServerInfo `jceId:"1"`
+    gpic_download_list: List[FileStorageServerInfo] = Field(None, jce_id=2)  # []FileStorageServerInfo `jceId:"2"`
+    qzone_proxy_service_list: List[FileStorageServerInfo] = Field(None, jce_id=3)  # []FileStorageServerInfo `jceId:"3"`
+    url_encode_service_list: List[FileStorageServerInfo] = Field(None, jce_id=4)  # []FileStorageServerInfo `jceId:"4"`
+    big_data_channel: "BigDataChannel" = Field(None, jce_id=5)  # *BigDataChannel         `jceId:"5"`
+    vip_emotion_list: List[FileStorageServerInfo] = Field(None, jce_id=6)  # []FileStorageServerInfo `jceId:"6"`
+    c2c_pic_down_list: List[FileStorageServerInfo] = Field(None, jce_id=7)  # []FileStorageServerInfo `jceId:"7"`
+    # FmtIPInfo          #   *FmtIPInfo `jceId:"8"`
+    # DomainIPChannel    #   *DomainIPChannel `jceId:"9"`
+    ptt_list: bytes = Field(None, jce_id=10)  # []byte `jceId:"10"`
+
+    def read_from(self, reader: JceReader):
+        self.upload_list = reader.read_list(FileStorageServerInfo, 0)
+        self.pic_download_list = reader.read_list(FileStorageServerInfo, 1)
+        self.gpic_download_list = reader.read_list(FileStorageServerInfo, 2)
+        self.qzone_proxy_service_list = reader.read_list(FileStorageServerInfo, 3)
+        self.url_encode_service_list = reader.read_list(FileStorageServerInfo, 4)
+        self.big_data_channel = reader.read_object(BigDataChannel)
+        self.vip_emotion_list = reader.read_list(FileStorageServerInfo, 6)
+        self.c2c_pic_down_list = reader.read_list(FileStorageServerInfo, 7)
+        self.ptt_list = reader.read_any(10)
+        pass
 
 
 class SvcReqRegister(BaseModel):
@@ -410,7 +495,6 @@ class FriendInfo(IJceStruct):
         self.new_lover_diamond_flag = reader.read_byte(54)
         self.ext_sns_frd_data = reader.read_any(55)
         self.mutual_mark_data = reader.read_any(56)
-        # todo 写完这个
 
 
 class TroopListRequest(IJceStruct):
@@ -502,7 +586,10 @@ class TroopNumber(IJceStruct):
         self.company_id = reader.read_int64(28)
         self.max_group_member_num = reader.read_int64(29)
         self.cmd_uin_group_mask = reader.read_int64(30)
-        # todo 继续写
+        self.guild_app_id = reader.read_int64(31)
+        self.guild_sub_type = reader.read_int64(32)
+        self.cmd_uin_ringtone_id = reader.read_int64(33)
+        self.cmd_uin_flag_ex2 = reader.read_int64(34)
 
 
 class TroopMemberListRequest(IJceStruct):
@@ -608,7 +695,7 @@ class ModifyGroupCardRequest(IJceStruct):
     def read_from(self, reader: JceReader):
         pass
 
-    def to_bytes(self) -> bytes:
+    def to_bytes(self) -> Union[bytes, bytearray]:
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
@@ -649,6 +736,11 @@ class SummaryCardReq(IJceStruct):
     def read_from(self, reader: JceReader):
         pass
 
+    def to_bytes(self) -> Union[bytes, bytearray]:
+        writer = JceWriter()
+        writer.write_jce_struct_raw(self)
+        return writer.bytes()
+
 
 class SummaryCardReqSearch(IJceStruct):
     keyword: str = Field(None, jce_id=0)  # string   `jceId:"0"`
@@ -658,4 +750,8 @@ class SummaryCardReqSearch(IJceStruct):
 
     def read_from(self, reader: JceReader):
         pass
-# todo 明天继续  先完成writer
+
+    def to_bytes(self) -> Union[bytes, bytearray]:
+        writer = JceWriter()
+        writer.write_jce_struct_raw(self)
+        return writer.bytes()

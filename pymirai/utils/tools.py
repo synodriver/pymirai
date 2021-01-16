@@ -43,7 +43,6 @@ def hex2str(hexstr: str):
     return pkt.decode('utf-8')
 
 
-def get_random_bin(num):
+def randbytes(num):
     int_list = [random.randint(0, 255) for i in range(num)]
-    pkt = bytearray(int_list)
-    return pkt
+    return bytes(int_list)

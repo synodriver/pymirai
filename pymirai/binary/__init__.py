@@ -2,6 +2,7 @@
 """
 jce 序列化相关
 """
+from .utils import gen_uuid
 
 
 def main():
