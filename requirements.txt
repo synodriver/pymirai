@@ -1,4 +1,5 @@
 pyjce2
+pytea2
 pydantic~=1.7.3
 loguru~=0.5.3
 pydispatcher~=2.0.5

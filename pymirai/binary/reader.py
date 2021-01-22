@@ -18,7 +18,7 @@ class Reader:
         elif isinstance(data, ByteBuffer):
             self.buffer = data
         else:
-            raise TypeError(f"can't init JceReader with data type {data.__class__.__name__}")
+            raise TypeError(f"can't init Reader with data type {data.__class__.__name__}")
 
     def __len__(self) -> int:
         return len(self.buffer)
