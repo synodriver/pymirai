@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from pymirai.binary.jce.reader import JceReader
+from pyjce import JceReader
 
 from pymirai.binary.jce.struct import RequestPacket
 data = bytes.fromhex(
