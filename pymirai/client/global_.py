@@ -5,12 +5,33 @@ from /client/global.go
 """
 import random
 import hashlib
+import threading
+from typing import List
 
 from pydantic import BaseModel, Field
+from pydantic.main import ModelMetaclass
+
+import pyjce
+import pymirai.binary.jce as jce
 
 from pymirai import utils, binary
 
+try:
+    from pytea import TEA  # C写的
+except ImportError:
+    from pymirai.binary.tea import TEA  # py写的
+
 NumberRange = "0123456789"
+
+
+class SingletonType(ModelMetaclass):
+    _instance_lock = threading.Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if not hasattr(cls, '_instance'):
+            with cls._instance_lock:  # 加锁
+                cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
 
 
 class DeviceInfoFile(BaseModel):
@@ -24,6 +45,19 @@ class DeviceInfoFile(BaseModel):
     proc_version: str = Field(alias="proc_version")
     protocol: int = Field(alias="protocol")  # 0: Pad 1: Phone 2: Watch 3: Mac
     imei: str = Field(alias="imei")
+    brand: str
+    bootloader: str
+    base_band: str
+    version: str
+    sim_info: str
+    os_type: str
+    mac_address: str
+    ipaddress: str
+    wifi_bssid: str
+    wifi_ssid: str
+    imsi_md5: str
+    android_id: str
+    apn: str
 
 
 class Version(BaseModel):
@@ -33,7 +67,7 @@ class Version(BaseModel):
     sdk: int
 
 
-class DeviceInfo(BaseModel):
+class DeviceInfo(BaseModel, metaclass=SingletonType):
     """
     里面写入默认值 当成全局变量
     """
@@ -55,7 +89,7 @@ class DeviceInfo(BaseModel):
     wifi_bssid: bytes = Field(b"00:50:56:C0:00:08")
     wifi_ssid: bytes = Field(b"<unknown ssid>")
     imsi_md5: bytes = Field(hashlib.md5(utils.randbytes(16)).digest())
-    imei: bytes = Field(b"468356291846738")
+    imei: str = Field("468356291846738")
     android_id: bytes = Field(b"PYMIRAI.123456.001")
     apn: bytes = Field(b"wifi")
     guid: bytes = Field(None)
@@ -66,38 +100,36 @@ class DeviceInfo(BaseModel):
                                  code_name=b"REL",
                                  sdk=29)
 
-    def to_json(self) -> str:
-        f = DeviceInfoFile(display=self.display,
-                           product=self.product,
-                           device=self.device,
-                           board=self.board,
-                           model=self.model,
-                           finger_print=self.finger_print,
-                           boot_id=self.boot_id,
-                           proc_version=self.proc_version,
-                           imei=self.imei,
-                           protocol=self.protocol
-                           )
-        return f.json()
+    # def to_json(self) -> str:
+    # f = DeviceInfoFile(display=self.display,
+    #                    product=self.product,
+    #                    device=self.device,
+    #                    board=self.board,
+    #                    model=self.model,
+    #                    finger_print=self.finger_print,
+    #                    boot_id=self.boot_id,
+    #                    proc_version=self.proc_version,
+    #                    imei=self.imei,
+    #
+    #                    protocol=self.protocol
+    #                    )
+    # return self.json()
 
     @classmethod
     def read_json(cls, d: str) -> "DeviceInfo":
-        f: DeviceInfoFile = DeviceInfoFile.parse_raw(d)
-        instance = cls(**f.dict())
+        instance: DeviceInfo = cls.parse_raw(d)
         instance.gen_new_guid()
         instance.gen_new_tgtgt_key()
         return instance
 
-    @classmethod
-    def gen_new_guid(cls):
-        t: bytes = hashlib.md5((cls.android_id + cls.mac_address).encode()).digest()
-        cls.__fields__["guid"].default = t
+    def gen_new_guid(self):
+        t: bytes = hashlib.md5((self.android_id + self.mac_address).encode()).digest()
+        self.guid = t
 
-    @classmethod
-    def gen_new_tgtgt_key(cls):
+    def gen_new_tgtgt_key(self):
         r: bytes = random.randbytes(16)
-        t: bytes = hashlib.md5(r + cls.guid).digest()
-        cls.__fields__["tgtgt_key"].default = t
+        t: bytes = hashlib.md5(r + self.guid).digest()
+        self.tgtgt_key = t
 
     def gen_device_info_data(self):
         # todo 这个需要pb
@@ -129,21 +161,22 @@ def gen_random_device():
     :return:
     """
     r: bytes = random.randbytes(16)
-    DeviceInfo.__fields__["display"].default = ("PYMIRAI" + utils.random_string_range(6, NumberRange) + ".001").encode()
-    DeviceInfo.__fields__["finger_print"].default = ("synodriver/pymirai/mirai:10/PYMIRAI.200122.001/"
-                                                     + utils.random_string_range(7, NumberRange)
-                                                     + ":user/release-keys").encode()
-    DeviceInfo.__fields__["boot_id"].default = binary.gen_uuid(r).encode()
-    DeviceInfo.__fields__["proc_version"].default = ("Linux version 3.0.31-"
-                                                     + utils.random_string(8)
-                                                     + " (android-build@xxx.xxx.xxx.xxx.com)")
+    instance = DeviceInfo()
+    instance.display = ("PYMIRAI" + utils.random_string_range(6, NumberRange) + ".001").encode()
+    instance.finger_print = ("synodriver/pymirai/mirai:10/PYMIRAI.200122.001/"
+                             + utils.random_string_range(7, NumberRange)
+                             + ":user/release-keys").encode()
+    instance.boot_id = binary.gen_uuid(r).encode()
+    instance.proc_version = ("Linux version 3.0.31-"
+                             + utils.random_string(8)
+                             + " (android-build@xxx.xxx.xxx.xxx.com)")
     r: bytes = random.randbytes(16)
     t: bytes = hashlib.md5(r).digest()
-    DeviceInfo.__fields__["imsi_md5"].default = t
-    DeviceInfo.__fields__["imei"].default = utils.random_string_range(15, NumberRange)
-    DeviceInfo.__fields__["android_id"].default = DeviceInfo.__fields__["display"].default
-    DeviceInfo.gen_new_guid()
-    DeviceInfo.gen_new_tgtgt_key()
+    instance.imsi_md5 = t
+    instance.imei = utils.random_string_range(15, NumberRange)
+    instance.android_id = instance.display
+    instance.gen_new_guid()
+    instance.gen_new_tgtgt_key()
 
 
 def get_version_info(p: int) -> VersionInfo:
@@ -161,7 +194,7 @@ def get_version_info(p: int) -> VersionInfo:
                            sub_sigmap=0x10400,
                            main_sigmap=34869472)
     elif p == 2:  # IPad
-        return VersionInfo(apk_id="com.tencent.mobileqq",
+        return VersionInfo(apk_id="com.tencent.minihd.qq",
                            app_id=537065739,
                            sort_version_name="5.8.9",
                            build_time=1595836208,
@@ -186,7 +219,7 @@ def get_version_info(p: int) -> VersionInfo:
                            sub_sigmap=0x10400,
                            main_sigmap=34869472)
     elif p == 4:  # MacOS:
-        return VersionInfo(apk_id="com.tencent.mobileqq",
+        return VersionInfo(apk_id="com.tencent.minihd.qq",
                            app_id=537064315,
                            sort_version_name="5.8.9",
                            build_time=1595836208,
@@ -199,5 +232,63 @@ def get_version_info(p: int) -> VersionInfo:
                            main_sigmap=1970400)
 
 
+def gen_imei() -> str:
+    final = ""
+    sum_: int = 0
+    for i in range(14):
+        to_add = random.randint(0, 9)
+        if (i + 1) % 2 == 0:
+            to_add *= 2
+            if to_add > 10:
+                to_add = (to_add % 10) + 1
+        sum_ += to_add
+        final += str(to_add)
+    ctrl_digit = (sum_ * 9) % 10
+    final += str(ctrl_digit)
+    return final
+
+
+def pack_uni_request_data(data: bytes):
+    r = bytes([0x0A]) + data + bytes([0x0B])
+    return r
+
+
+async def get_sso_address():
+    protocol: VersionInfo = get_version_info(DeviceInfo().protocol)
+    key: bytes = bytes.fromhex("F0441F5FF42DA58FDCF7949ABA62D411")
+    payload = pyjce.JceWriter().write_int64(0, 1).write_int64(0, 2).write_byte(bytes([1]), 3) \
+        .write_string("00000", 4).write_int32(100, 5).write_int32(protocol.app_id, 6).write_string(DeviceInfo().imei, 7) \
+        .write_int64(0, 8).write_int64(0, 9).write_int64(0, 10).write_int64(0, 11).write_byte(bytes([0]), 12) \
+        .write_int64(0, 13).write_byte(bytes([1]), 14).bytes()
+    buf = jce.RequestDataVersion2(
+        map={"HttpServerListReq": {"ConfigHttp.HttpServerListReq": pack_uni_request_data(payload)}})
+    pkt = jce.RequestPacket(iversion=2, sservant_name="ConfigHttp", sfunc_name="HttpServerListReq",
+                            sbuffer=buf.to_bytes())
+
+    tea = TEA(key)
+    writer = binary.Writer()
+    writer.write_int_lv_packet(0, lambda w: w.write(pkt.to_bytes()))
+    post_bytes = tea.encrypt(bytes(writer.bytes()))
+    resp = await utils.http_post_bytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp", post_bytes)
+    resp_pkt = jce.RequestPacket()
+    data = jce.RequestDataVersion2()
+    resp_pkt.read_from(pyjce.JceReader(tea.decrypt(resp)[4:]))
+    data.read_from(pyjce.JceReader(resp_pkt.sbuffer))
+    reader = pyjce.JceReader(data.map["HttpServerListRes"]["ConfigHttp.HttpServerListRes"][1:])
+    servers: List[jce.SsoServerInfo] = reader.read_list(jce.SsoServerInfo, 2)
+
+    add = []
+    for server in servers:
+        if "com" in server.server:
+            continue
+        add.append(server)
+    return add
+
+
 if __name__ == "__main__":
-    pass
+    # print(gen_imei())
+
+    import asyncio
+
+    data = asyncio.run(get_sso_address())
+    print(data)

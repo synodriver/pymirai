@@ -34,6 +34,9 @@ class RequestPacket(IJceStruct):  # todo 加入jceid标注
         self.context = reader.read_any(9)
         self.status = reader.read_any(10)
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class RequestDataVersion3(IJceStruct):
     map: Dict[str, bytes] = Field(None, jce_id=0)  # map[string]map[string][]byte `jceId:"0"`
@@ -199,6 +202,9 @@ class SvcReqRegister(BaseModel):
         writer.write_jce_struct_raw(self)
         return writer.bytes()
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class SvcRespRegister(IJceStruct):
     uin: int = Field(None, jce_id=0)  # int64  `jceId:"0"`
@@ -244,6 +250,9 @@ class SvcRespRegister(IJceStruct):
         self.client_battery_get_interval = reader.read_int64(18)
         self.client_auto_status_interval = reader.read_int64(19)
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class PushMessageInfo(IJceStruct):
     """昵昵说不连续的jce是因为不需要那些 如广告"""
@@ -282,6 +291,9 @@ class PushMessageInfo(IJceStruct):
         self.from_mobile = reader.read_string(16)
         self.from_name = reader.read_string(17)
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class SvcRespPushMsg(BaseModel):
     uin: int = Field(None, jce_id=0)  # int64        `jceId:"0"`
@@ -294,6 +306,9 @@ class SvcRespPushMsg(BaseModel):
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SvcReqGetDevLoginInfo(BaseModel):
@@ -312,6 +327,9 @@ class SvcReqGetDevLoginInfo(BaseModel):
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SvcDevLoginInfo(IJceStruct):
@@ -338,6 +356,9 @@ class SvcDevLoginInfo(IJceStruct):
         self.product_type = reader.read_int64(9)
         self.can_be_kicked = reader.read_int64(10)
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class DelMsgInfo(BaseModel):
     from_uin: int = Field(None, jce_id=0)  # int64  `jceId:"0"`
@@ -351,6 +372,9 @@ class DelMsgInfo(BaseModel):
     sso_seq: int = Field(None, jce_id=8)  # int32  `jceId:"8"`
     sso_ip: int = Field(None, jce_id=9)  # int32  `jceId:"9"`
     client_ip: int = Field(None, jce_id=10)  # int32  `jceId:"10"`
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class FriendListRequest(BaseModel):
@@ -378,6 +402,9 @@ class FriendListRequest(BaseModel):
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class FriendInfo(IJceStruct):
@@ -496,6 +523,9 @@ class FriendInfo(IJceStruct):
         self.ext_sns_frd_data = reader.read_any(55)
         self.mutual_mark_data = reader.read_any(56)
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class TroopListRequest(IJceStruct):
     uin: int = Field(None, jce_id=0)  # int64   `jceId:"0"`
@@ -515,6 +545,9 @@ class TroopListRequest(IJceStruct):
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class TroopNumber(IJceStruct):
@@ -591,6 +624,9 @@ class TroopNumber(IJceStruct):
         self.cmd_uin_ringtone_id = reader.read_int64(33)
         self.cmd_uin_flag_ex2 = reader.read_int64(34)
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class TroopMemberListRequest(IJceStruct):
     uin: int = Field(None, jce_id=0)  # int64 `jceId:"0"`
@@ -609,6 +645,9 @@ class TroopMemberListRequest(IJceStruct):
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class TroopMemberInfo(BaseModel):
@@ -685,6 +724,9 @@ class TroopMemberInfo(BaseModel):
         self.nameplate = reader.read_int64(38)
         self.group_honor = reader.read_any(39)
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class ModifyGroupCardRequest(IJceStruct):
     zero: int = Field(None, jce_id=0)  # int64        `jceId:"0"`
@@ -700,6 +742,9 @@ class ModifyGroupCardRequest(IJceStruct):
         writer.write_jce_struct_raw(self)
         return writer.bytes()
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class UinInfo(IJceStruct):
     uin: int = Field(None, jce_id=0)  # int64  `jceId:"0"`
@@ -712,6 +757,9 @@ class UinInfo(IJceStruct):
 
     def read_from(self, reader: JceReader):
         pass
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SummaryCardReq(IJceStruct):
@@ -741,6 +789,9 @@ class SummaryCardReq(IJceStruct):
         writer.write_jce_struct_raw(self)
         return writer.bytes()
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class SummaryCardReqSearch(IJceStruct):
     keyword: str = Field(None, jce_id=0)  # string   `jceId:"0"`
@@ -755,3 +806,6 @@ class SummaryCardReqSearch(IJceStruct):
         writer = JceWriter()
         writer.write_jce_struct_raw(self)
         return writer.bytes()
+
+    class Config:
+        arbitrary_types_allowed = True

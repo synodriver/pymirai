@@ -39,7 +39,7 @@ class SignalManager:
         :param kwargs:
         :return:
         """
-        for receiver in dispatcher.liveReceivers(dispatcher.getAllReceivers(self.send, signal)):
+        for receiver in dispatcher.liveReceivers(dispatcher.getAllReceivers(self.sender, signal)):
             dispatcher.disconnect(receiver, signal, self.sender, **kwargs)
 
     def send(self, signal, *args, **kwargs) -> List[Tuple]:
