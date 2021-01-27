@@ -10,11 +10,14 @@ async def http_post_bytes(url: str, data: bytes) -> bytes:
     headers = {"User-Agent": "QQ/8.2.0.1296 CFNetwork/1126", "Net-Type": "Wifi"}
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data, headers=headers) as resp:
-            body = await resp.read()
+            body = await resp.read()  # 1424
             if "gzip" in resp.headers.get("Content-Encoding", ""):
-                uncom = gzip.decompress(body)
-                return uncom
-            return body
+                try:
+                    uncom = gzip.decompress(body)
+                    return uncom
+                except gzip.BadGzipFile:
+                    return body
+
 
 
 if __name__ == "__main__":

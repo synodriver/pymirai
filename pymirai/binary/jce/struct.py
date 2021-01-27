@@ -6,16 +6,16 @@ from pyjce import JceReader, JceWriter, IJceStruct
 
 
 class RequestPacket(IJceStruct):  # todo 加入jceid标注
-    iversion: int = Field(None, jce_id=1)  # int16   `jceId:"1"`
-    cpacket_type: Union[bytes, bytearray] = Field(None, jce_id=2)  # byte              `jceId:"2"`
-    imessage_type: int = Field(None, jce_id=3)  # int32             `jceId:"3"`
-    irequest_id: int = Field(None, jce_id=4)  # int32             `jceId:"4"`
-    sservant_name: str = Field(None, jce_id=5)  # string            `jceId:"5"`
-    sfunc_name: str = Field(None, jce_id=6)  # string            `jceId:"6"`
-    sbuffer: Union[bytes, bytearray] = Field(None, jce_id=7)  # []byte            `jceId:"7"`
-    itimeout: int = Field(None, jce_id=8)  # int32             `jceId:"8"`
-    context: Dict[str, str] = Field(None, jce_id=9)  # map[string]string `jceId:"9"`
-    status: Dict[str, str] = Field(None, jce_id=10)  # map[string]string `jceId:"10"`
+    iversion: int = Field(0, jce_id=1)  # int16   `jceId:"1"`
+    cpacket_type: Union[bytes, bytearray] = Field(bytes([0]), jce_id=2)  # byte              `jceId:"2"`
+    imessage_type: int = Field(0, jce_id=3)  # int32             `jceId:"3"`
+    irequest_id: int = Field(0, jce_id=4)  # int32             `jceId:"4"`
+    sservant_name: str = Field("", jce_id=5)  # string            `jceId:"5"`
+    sfunc_name: str = Field("", jce_id=6)  # string            `jceId:"6"`
+    sbuffer: Union[bytes, bytearray] = Field(bytes([0]), jce_id=7)  # []byte            `jceId:"7"`
+    itimeout: int = Field(0, jce_id=8)  # int32             `jceId:"8"`
+    context: Dict[str, str] = Field({}, jce_id=9)  # map[string]string `jceId:"9"`
+    status: Dict[str, str] = Field({}, jce_id=10)  # map[string]string `jceId:"10"`
 
     def to_bytes(self) -> bytearray:
         writer = JceWriter()
@@ -71,6 +71,9 @@ class SsoServerInfo(IJceStruct):
         self.server = reader.read_string(1)
         self.port = reader.read_int32(2)
         self.location = reader.read_string(8)
+
+    def to_bytes(self) -> Union[bytes, bytearray]:
+        pass
 
 
 class BigDataIPInfo(IJceStruct):
