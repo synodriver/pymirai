@@ -253,7 +253,7 @@ def pack_uni_request_data(data: bytes):
     return r
 
 
-async def get_sso_address():
+async def get_sso_address() -> List[jce.SsoServerInfo]:
     protocol: VersionInfo = get_version_info(DeviceInfo().protocol)
     key: bytes = bytes.fromhex("F0441F5FF42DA58FDCF7949ABA62D411")
     payload = pyjce.JceWriter().write_int64(0, 1).write_int64(0, 2).write_byte(bytes([1]), 3) \
