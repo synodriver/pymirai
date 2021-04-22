@@ -56,14 +56,14 @@ class Writer:
         encrypted = tea.encrypt(data)
         self.write(encrypted)
 
-    def write_int_lv_packet(self, offset: int, f: Callable[["Writer"], None]):
+    def write_int_lv_packet(self, offset: int, f: Callable[["Writer"], None]) -> None:
         t = self.__class__()
         f(t)
         data = t.bytes()
         self.write_uint32(len(data) + offset)
         self.write(data)
 
-    def write_uni_packet(self, command_name: str, session_id: bytes, extra_data: bytes, body: bytes):
+    def write_uni_packet(self, command_name: str, session_id: bytes, extra_data: bytes, body: bytes) -> None:
         def _lambda_1(w: "Writer"):
             w.write_string(command_name)
             w.write_uint32(8)

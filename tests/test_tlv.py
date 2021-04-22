@@ -17,7 +17,8 @@ def main():
     name: str = sys.argv[1]
     with open(name, "rb") as f:
         data = f.read()
-    print(decode(data))
+    md5, size, name, url=decode(data)
+    print(f"md5:{md5}\nsize:{size}\nname:{name}\nurl:{url}")
 
 
 if __name__ == "__main__":
