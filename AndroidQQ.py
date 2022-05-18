@@ -32,7 +32,7 @@ class AndroidQQ(object):
         self.deviceMac = '54 44 61 90 FC 9C 7E 08 C4 13 59 26 B8 73 4B C2'
         self.deviceImsi = '460001330114682'
         self.deviceimie = '865166024867445'
-        self.ver = '|' + self.deviceImsi + '|A8.4.10.b8c39faf'
+        self.ver = f'|{self.deviceImsi}|A8.4.10.b8c39faf'
         self.bssid = ''
         self.ssid = 'dlb'
         self.AndroidId = 'CC 3C DD 51 8A 92 6C 6C 54 FF 46 48 CE E2 1D 29'

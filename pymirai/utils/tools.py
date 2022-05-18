@@ -13,8 +13,7 @@ def bytes2int(bin_) -> int:
 
 def hex2bytes(hexstr: str) -> bytes:
     str_bytes = hexstr.strip().replace("\n", "")
-    pkt = bytes.fromhex(str_bytes)
-    return pkt
+    return bytes.fromhex(str_bytes)
 
 
 def bytes2hex(bin_: bytes) -> str:
@@ -40,6 +39,5 @@ def hex2str(hexstr: str):
     return pkt.decode('utf-8')
 
 def getRandomBin(num):
-    intlist = [random.randint(0,255) for i in range(num)]
-    pkt = bytearray(intlist)
-    return pkt
+    intlist = [random.randint(0,255) for _ in range(num)]
+    return bytearray(intlist)

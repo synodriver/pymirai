@@ -24,7 +24,6 @@ class TestPack(TestCase):
         data = Tea.decrypt((hex2bytes(a)), bytes(16))
         with open("login", "wb") as f2:
             f2.write(data)
-        pass
 
 
 if __name__ == "__main__":
